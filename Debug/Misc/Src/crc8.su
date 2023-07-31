@@ -1,0 +1,2 @@
+../Misc/Src/crc8.c:15:9:genCrc	24	static
+../Misc/Src/crc8.c:31:16:calcCrc8	24	static
