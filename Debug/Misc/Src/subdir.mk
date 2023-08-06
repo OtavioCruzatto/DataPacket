@@ -6,15 +6,15 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Misc/Src/crc8.c \
-../Misc/Src/dataPacket.c 
+../Misc/Src/dataPacketTx.c 
 
 OBJS += \
 ./Misc/Src/crc8.o \
-./Misc/Src/dataPacket.o 
+./Misc/Src/dataPacketTx.o 
 
 C_DEPS += \
 ./Misc/Src/crc8.d \
-./Misc/Src/dataPacket.d 
+./Misc/Src/dataPacketTx.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -24,7 +24,7 @@ Misc/Src/%.o Misc/Src/%.su: ../Misc/Src/%.c Misc/Src/subdir.mk
 clean: clean-Misc-2f-Src
 
 clean-Misc-2f-Src:
-	-$(RM) ./Misc/Src/crc8.d ./Misc/Src/crc8.o ./Misc/Src/crc8.su ./Misc/Src/dataPacket.d ./Misc/Src/dataPacket.o ./Misc/Src/dataPacket.su
+	-$(RM) ./Misc/Src/crc8.d ./Misc/Src/crc8.o ./Misc/Src/crc8.su ./Misc/Src/dataPacketTx.d ./Misc/Src/dataPacketTx.o ./Misc/Src/dataPacketTx.su
 
 .PHONY: clean-Misc-2f-Src
 

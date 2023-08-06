@@ -17,7 +17,6 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <dataPacket.h>
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -40,16 +39,21 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim9;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-DataPacket dataPacket1;
+DataPacketTx dataPacketTx;
+uint8_t rx1_char = 0x00;
+
 uint32_t counterTimer1 = 0;
 Flag flag_counter_1 = INACTIVE;
 uint8_t bytes[16] = {
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
 		};
+
+uint16_t counter = 0;
 
 /* USER CODE END PV */
 
@@ -70,19 +74,29 @@ static void MX_TIM9_Init(void);
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim == &htim9)
+	if (htim == &htim9)
 	{
-		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-
 		counterTimer1++;
 		if (counterTimer1 >= DELAY_1_SECOND)
 		{
 			counterTimer1 = 0;
 			flag_counter_1 = ACTIVE;
 		}
-
 	}
 }
+
+/*
+ * Interrupt for UART RX
+ */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart == &huart2)
+	{
+		HAL_UART_Receive_IT(&huart2, &rx1_char, 1);
+	}
+}
+
+
 
 /* USER CODE END 0 */
 
@@ -119,7 +133,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Base_Start_IT(&htim9);
-  dataPacketInit(&dataPacket1, 0xAA, 0x55);
+  dataPacketTxInit(&dataPacketTx, 0xAA, 0x55);
+  HAL_UART_Receive_IT(&huart2, &rx1_char, 1);
 
 
   /* USER CODE END 2 */
@@ -128,15 +143,14 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
 	  if (flag_counter_1 == ACTIVE)
 	  {
-		  dataPacketSetCommand(&dataPacket1, 0x01);
-		  dataPacketSetPayloadData(&dataPacket1, bytes, 16);
-		  dataPacketMount(&dataPacket1);
-		  dataPacketUartSend(&dataPacket1, huart2);
-		  dataPacketPayloadDataClear(&dataPacket1);
-		  dataPacketClear(&dataPacket1);
+		  dataPacketTxSetCommand(&dataPacketTx, 0x01);
+		  dataPacketTxSetPayloadData(&dataPacketTx, bytes, 16);
+		  dataPacketTxMount(&dataPacketTx);
+		  dataPacketTxUartSend(&dataPacketTx, huart2);
+		  dataPacketTxPayloadDataClear(&dataPacketTx);
+		  dataPacketTxClear(&dataPacketTx);
 		  flag_counter_1 = INACTIVE;
 	  }
     /* USER CODE END WHILE */
