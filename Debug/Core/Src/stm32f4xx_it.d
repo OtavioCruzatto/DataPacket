@@ -29,6 +29,7 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketTx.h \
  C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h \
+ C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketRx.h \
  ../Core/Inc/stm32f4xx_it.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -61,4 +62,5 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketTx.h:
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h:
+C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketRx.h:
 ../Core/Inc/stm32f4xx_it.h:

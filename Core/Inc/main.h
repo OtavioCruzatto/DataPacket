@@ -32,7 +32,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <dataPacketTx.h>
+#include "dataPacketTx.h"
+#include "dataPacketRx.h"
 
 /* USER CODE END Includes */
 
@@ -44,6 +45,12 @@ typedef enum FLAG
 	INACTIVE = 0x00,
 	ACTIVE
 } Flag;
+
+typedef enum BOOL
+{
+	FALSE = 0x00,
+	TRUE
+} Bool;
 
 /* USER CODE END ET */
 
@@ -71,8 +78,11 @@ void Error_Handler(void);
 #define LED_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
-#define DELAY_1_SECOND	10000
-#define DELAY_2_SECONDS	20000
+#define DELAY_100_MILISECONDS	1000
+#define DELAY_250_MILISECONDS	2500
+#define DELAY_500_MILISECONDS	5000
+#define DELAY_1000_MILISECONDS	10000
+#define DELAY_2000_MILISECONDS	20000
 
 /* USER CODE END Private defines */
 

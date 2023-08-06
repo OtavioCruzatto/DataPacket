@@ -44,10 +44,18 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 DataPacketTx dataPacketTx;
+DataPacketRx dataPacketRx;
 uint8_t rx1_char = 0x00;
 
 uint32_t counterTimer1 = 0;
 Flag flag_counter_1 = INACTIVE;
+
+uint32_t counterTimer2 = 0;
+Flag flag_counter_2 = INACTIVE;
+
+uint32_t counterTimer3 = 0;
+Flag flag_counter_3 = INACTIVE;
+
 uint8_t bytes[16] = {
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
@@ -76,11 +84,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim9)
 	{
-		counterTimer1++;
-		if (counterTimer1 >= DELAY_1_SECOND)
+		//counterTimer1++;
+		if (counterTimer1 >= DELAY_1000_MILISECONDS)
 		{
 			counterTimer1 = 0;
 			flag_counter_1 = ACTIVE;
+		}
+
+		counterTimer2++;
+		if (counterTimer2 >= DELAY_2000_MILISECONDS)
+		{
+			counterTimer2 = 0;
+			flag_counter_2 = ACTIVE;
+		}
+
+		counterTimer3++;
+		if (counterTimer3 >= DELAY_250_MILISECONDS)
+		{
+			counterTimer3 = 0;
+			flag_counter_3 = ACTIVE;
 		}
 	}
 }
@@ -93,6 +115,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if (huart == &huart2)
 	{
 		HAL_UART_Receive_IT(&huart2, &rx1_char, 1);
+		HAL_UART_Transmit(&huart2, &rx1_char, 1, HAL_MAX_DELAY);
+		dataPacketRxAppend(&dataPacketRx, rx1_char);
+		rx1_char = 0x00;
 	}
 }
 
@@ -134,6 +159,7 @@ int main(void)
 
   HAL_TIM_Base_Start_IT(&htim9);
   dataPacketTxInit(&dataPacketTx, 0xAA, 0x55);
+  dataPacketRxInit(&dataPacketRx, 0xAA, 0x55);
   HAL_UART_Receive_IT(&huart2, &rx1_char, 1);
 
 
@@ -145,6 +171,8 @@ int main(void)
   {
 	  if (flag_counter_1 == ACTIVE)
 	  {
+		  //HAL_UART_Transmit(&huart2, dataPacketRx->dataPacket, 20, HAL_MAX_DELAY);
+
 		  dataPacketTxSetCommand(&dataPacketTx, 0x01);
 		  dataPacketTxSetPayloadData(&dataPacketTx, bytes, 16);
 		  dataPacketTxMount(&dataPacketTx);
@@ -153,6 +181,23 @@ int main(void)
 		  dataPacketTxClear(&dataPacketTx);
 		  flag_counter_1 = INACTIVE;
 	  }
+
+	  if (flag_counter_2 == ACTIVE)
+	  {
+		  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == VALID_RX_DATA_PACKET)
+		  {
+			  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+			  dataPacketRxClear(&dataPacketRx);
+		  }
+		  flag_counter_2 = INACTIVE;
+	  }
+
+	  if (flag_counter_3 == ACTIVE)
+	  {
+		  dataPacketRxDecode(&dataPacketRx);
+		  flag_counter_3 = INACTIVE;
+	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

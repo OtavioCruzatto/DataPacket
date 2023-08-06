@@ -1,5 +1,5 @@
 /*
- * dataPacket.h
+ * dataPacketTx.h
  *
  *  Created on: Jul 28, 2023
  *      Author: Otavio
@@ -12,17 +12,17 @@
 #include <string.h>
 #include "crc8.h"
 
-#define MIN_PAYLOAD_DATA_BYTES	0
-#define MAX_PAYLOAD_DATA_BYTES	255
-#define MIN_PACKET_BYTES		5
-#define MAX_PACKET_BYTES		(MIN_PACKET_BYTES + MAX_PAYLOAD_DATA_BYTES)
-#define QTY_PAYLOAD_DATA_BYTES	25
-#define QTY_PACKET_BYTES		(MIN_PACKET_BYTES + QTY_PAYLOAD_DATA_BYTES)
+#define MIN_PAYLOAD_TX_DATA_BYTES	0
+#define MAX_PAYLOAD_TX_DATA_BYTES	255
+#define MIN_PACKET_TX_BYTES			5
+#define MAX_PACKET_TX_BYTES			(MIN_PACKET_TX_BYTES + MAX_PAYLOAD_TX_DATA_BYTES)
+#define QTY_PAYLOAD_TX_DATA_BYTES	25
+#define QTY_PACKET_TX_BYTES			(MIN_PACKET_TX_BYTES + QTY_PAYLOAD_TX_DATA_BYTES)
 
-typedef enum DATA_PACKET_STATUS
+typedef enum DATA_PACKET_TX_STATUS
 {
-	INVALID_DATA_PACKET = 0x00,
-	VALID_DATA_PACKET
+	INVALID_TX_DATA_PACKET = 0x00,
+	VALID_TX_DATA_PACKET
 } DataPacketTxStatus;
 
 typedef struct
@@ -31,9 +31,9 @@ typedef struct
 	uint8_t start_2;
 	uint8_t command;
 	uint8_t payloadDataLength;
-	uint8_t payloadData[QTY_PAYLOAD_DATA_BYTES];
+	uint8_t payloadData[QTY_PAYLOAD_TX_DATA_BYTES];
 	uint8_t crc8;
-	uint8_t dataPacket[QTY_PACKET_BYTES];
+	uint8_t dataPacket[QTY_PACKET_TX_BYTES];
 	uint16_t dataPacketLength;
 	DataPacketTxStatus dataPacketTxStatus;
 } DataPacketTx;

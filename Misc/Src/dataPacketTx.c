@@ -1,5 +1,5 @@
 /*
- * dataPacket.c
+ * dataPacketTx.c
  *
  *  Created on: Jul 28, 2023
  *      Author: Otavio
@@ -13,11 +13,11 @@ void dataPacketTxInit(DataPacketTx *dataPacketTx, uint8_t start_1, uint8_t start
 	dataPacketTx->start_2 = start_2;
 	dataPacketTx->command = 0x00;
 	dataPacketTx->payloadDataLength = 0x00;
-	memset(dataPacketTx->payloadData, 0x00, QTY_PAYLOAD_DATA_BYTES);
+	memset(dataPacketTx->payloadData, 0x00, QTY_PAYLOAD_TX_DATA_BYTES);
 	dataPacketTx->crc8 = 0x00;
-	memset(dataPacketTx->dataPacket, 0x00, QTY_PACKET_BYTES);
+	memset(dataPacketTx->dataPacket, 0x00, QTY_PACKET_TX_BYTES);
 	dataPacketTx->dataPacketLength = 0x00;
-	dataPacketTx->dataPacketTxStatus = INVALID_DATA_PACKET;
+	dataPacketTx->dataPacketTxStatus = INVALID_TX_DATA_PACKET;
 }
 
 void dataPacketTxMount(DataPacketTx *dataPacketTx)
@@ -30,12 +30,12 @@ void dataPacketTxMount(DataPacketTx *dataPacketTx)
 	dataPacketTx->dataPacketLength = dataPacketTx->payloadDataLength + 4 + 1;
 	dataPacketTx->crc8 = genCrc(dataPacketTx->dataPacket, dataPacketTx->dataPacketLength - 1);
 	dataPacketTx->dataPacket[dataPacketTx->payloadDataLength + 4] = dataPacketTx->crc8;
-	dataPacketTx->dataPacketTxStatus = VALID_DATA_PACKET;
+	dataPacketTx->dataPacketTxStatus = VALID_TX_DATA_PACKET;
 }
 
 void dataPacketTxUartSend(DataPacketTx *dataPacketTx, UART_HandleTypeDef huart)
 {
-	if (dataPacketTx->dataPacketTxStatus == VALID_DATA_PACKET)
+	if (dataPacketTx->dataPacketTxStatus == VALID_TX_DATA_PACKET)
 	{
 		HAL_UART_Transmit(&huart, dataPacketTx->dataPacket, dataPacketTx->dataPacketLength, HAL_MAX_DELAY);
 	}
@@ -43,19 +43,19 @@ void dataPacketTxUartSend(DataPacketTx *dataPacketTx, UART_HandleTypeDef huart)
 
 void dataPacketTxClear(DataPacketTx *dataPacketTx)
 {
-	dataPacketTx->dataPacketTxStatus = INVALID_DATA_PACKET;
-	memset(dataPacketTx->dataPacket, 0x00, QTY_PACKET_BYTES);
+	dataPacketTx->dataPacketTxStatus = INVALID_TX_DATA_PACKET;
+	memset(dataPacketTx->dataPacket, 0x00, QTY_PACKET_TX_BYTES);
 }
 
 void dataPacketTxPayloadDataClear(DataPacketTx *dataPacketTx)
 {
-	dataPacketTx->dataPacketTxStatus = INVALID_DATA_PACKET;
-	memset(dataPacketTx->payloadData, 0x00, QTY_PAYLOAD_DATA_BYTES);
+	dataPacketTx->dataPacketTxStatus = INVALID_TX_DATA_PACKET;
+	memset(dataPacketTx->payloadData, 0x00, QTY_PAYLOAD_TX_DATA_BYTES);
 }
 
 void dataPacketTxSetCommand(DataPacketTx *dataPacketTx, uint8_t command)
 {
-	dataPacketTx->dataPacketTxStatus = INVALID_DATA_PACKET;
+	dataPacketTx->dataPacketTxStatus = INVALID_TX_DATA_PACKET;
 
 	if ((command < 0x01) || (command > 0xFE))
 	{
@@ -72,7 +72,7 @@ uint8_t dataPacketTxGetCommand(DataPacketTx *dataPacketTx)
 
 void dataPacketTxSetPayloadData(DataPacketTx *dataPacketTx, uint8_t *payloadData, uint8_t payloadDataLength)
 {
-	dataPacketTx->dataPacketTxStatus = INVALID_DATA_PACKET;
+	dataPacketTx->dataPacketTxStatus = INVALID_TX_DATA_PACKET;
 	memcpy(dataPacketTx->payloadData, payloadData, payloadDataLength);
 	dataPacketTx->payloadDataLength = payloadDataLength;
 }

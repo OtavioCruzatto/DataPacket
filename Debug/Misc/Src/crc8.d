@@ -29,7 +29,8 @@ Misc/Src/crc8.o: ../Misc/Src/crc8.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketTx.h \
- C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h
+ C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h \
+ C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketRx.h
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -62,3 +63,4 @@ C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketTx.h:
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h:
+C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketRx.h:
