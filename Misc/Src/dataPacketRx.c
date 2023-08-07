@@ -21,7 +21,6 @@ void dataPacketRxInit(DataPacketRx *dataPacketRx, uint8_t start_1, uint8_t start
 	dataPacketRx->dataPacketRxStatus = INVALID_RX_DATA_PACKET;
 	dataPacketRx->containsStarterBytes = FALSE;
 	dataPacketRx->starterByteIndex = 0;
-	dataPacketRx->decodeTries = 0;
 }
 
 void dataPacketRxAppend(DataPacketRx *dataPacketRx, uint8_t newByte)
@@ -88,16 +87,6 @@ void dataPacketRxDecode(DataPacketRx *dataPacketRx)
 			{
 				dataPacketRxClear(dataPacketRx);
 			}
-		}
-	}
-
-	if (dataPacketRx->dataPacketRxStatus == INVALID_RX_DATA_PACKET)
-	{
-		dataPacketRx->decodeTries++;
-		if (dataPacketRx->decodeTries >= 30)
-		{
-			dataPacketRxClear(dataPacketRx);
-			dataPacketRx->decodeTries = 0;
 		}
 	}
 }

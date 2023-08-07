@@ -41,6 +41,7 @@
 TIM_HandleTypeDef htim9;
 
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 DataPacketTx dataPacketTx;
@@ -72,6 +73,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM9_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -142,6 +144,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_TIM9_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Base_Start_IT(&htim9);
@@ -168,6 +171,7 @@ int main(void)
 
 	  if (counterTimer2 >= DELAY_1000_MILISECONDS)
 	  {
+		  //HAL_UART_Transmit(&huart3, dataPacketRx.dataPacket, 15, HAL_MAX_DELAY);
 		  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == VALID_RX_DATA_PACKET)
 		  {
 			  uint8_t receivedCmd = dataPacketRxGetCommand(&dataPacketRx);
@@ -194,9 +198,9 @@ int main(void)
 					  break;
 			  }
 			  receivedCmd = 0x00;
+			  //HAL_UART_Transmit(&huart3, dataPacketRx.dataPacket, 15, HAL_MAX_DELAY);
+			  dataPacketRxClear(&dataPacketRx);
 		  }
-
-		  dataPacketRxClear(&dataPacketRx);
 		  counterTimer2 = 0;
 	  }
 
@@ -352,6 +356,39 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
 
 }
 
