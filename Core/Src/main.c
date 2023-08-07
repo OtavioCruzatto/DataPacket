@@ -45,23 +45,25 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 DataPacketTx dataPacketTx;
 DataPacketRx dataPacketRx;
-uint8_t rx1_char = 0x00;
+uint8_t receivedByte = 0x00;
+
+uint8_t bytes[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+				 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+				};
+
+// uint32_t counterTimerUartRxInterrupt = 0;
 
 uint32_t counterTimer1 = 0;
-Flag flag_counter_1 = INACTIVE;
-
 uint32_t counterTimer2 = 0;
-Flag flag_counter_2 = INACTIVE;
-
 uint32_t counterTimer3 = 0;
-Flag flag_counter_3 = INACTIVE;
+uint32_t counterTimer4 = 0;
 
-uint8_t bytes[16] = {
-		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
-		};
+uint8_t cmdTemporization_1 = 0x10;
+uint8_t cmdTemporization_2 = 0x20;
+uint8_t cmdTemporization_3 = 0x30;
 
-uint16_t counter = 0;
+Bool blinkStatus = FALSE;
+uint32_t blinkDelay = 0;
 
 /* USER CODE END PV */
 
@@ -84,26 +86,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim9)
 	{
-		//counterTimer1++;
-		if (counterTimer1 >= DELAY_1000_MILISECONDS)
-		{
-			counterTimer1 = 0;
-			flag_counter_1 = ACTIVE;
-		}
-
+		// counterTimerUartRxInterrupt++;
+		counterTimer1++;
 		counterTimer2++;
-		if (counterTimer2 >= DELAY_2000_MILISECONDS)
-		{
-			counterTimer2 = 0;
-			flag_counter_2 = ACTIVE;
-		}
-
 		counterTimer3++;
-		if (counterTimer3 >= DELAY_250_MILISECONDS)
-		{
-			counterTimer3 = 0;
-			flag_counter_3 = ACTIVE;
-		}
+		counterTimer4++;
 	}
 }
 
@@ -114,10 +101,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart == &huart2)
 	{
-		HAL_UART_Receive_IT(&huart2, &rx1_char, 1);
-		HAL_UART_Transmit(&huart2, &rx1_char, 1, HAL_MAX_DELAY);
-		dataPacketRxAppend(&dataPacketRx, rx1_char);
-		rx1_char = 0x00;
+		HAL_UART_Receive_IT(&huart2, &receivedByte, 1);
+		dataPacketRxAppend(&dataPacketRx, receivedByte);
+		// counterTimerUartRxInterrupt = 0;
+		receivedByte = 0x00;
 	}
 }
 
@@ -160,8 +147,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim9);
   dataPacketTxInit(&dataPacketTx, 0xAA, 0x55);
   dataPacketRxInit(&dataPacketRx, 0xAA, 0x55);
-  HAL_UART_Receive_IT(&huart2, &rx1_char, 1);
-
+  HAL_UART_Receive_IT(&huart2, &receivedByte, 1);
 
   /* USER CODE END 2 */
 
@@ -169,34 +155,80 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (flag_counter_1 == ACTIVE)
+	  if (counterTimer1 >= DELAY_1000_MILISECONDS)
 	  {
-		  //HAL_UART_Transmit(&huart2, dataPacketRx->dataPacket, 20, HAL_MAX_DELAY);
-
 		  dataPacketTxSetCommand(&dataPacketTx, 0x01);
 		  dataPacketTxSetPayloadData(&dataPacketTx, bytes, 16);
 		  dataPacketTxMount(&dataPacketTx);
 		  dataPacketTxUartSend(&dataPacketTx, huart2);
 		  dataPacketTxPayloadDataClear(&dataPacketTx);
 		  dataPacketTxClear(&dataPacketTx);
-		  flag_counter_1 = INACTIVE;
+		  counterTimer1 = 0;
 	  }
 
-	  if (flag_counter_2 == ACTIVE)
+	  if (counterTimer2 >= DELAY_1000_MILISECONDS)
 	  {
 		  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == VALID_RX_DATA_PACKET)
 		  {
-			  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-			  dataPacketRxClear(&dataPacketRx);
+			  uint8_t receivedCmd = dataPacketRxGetCommand(&dataPacketRx);
+			  switch (receivedCmd)
+			  {
+				  case 0x10:
+					  blinkDelay = DELAY_100_MILISECONDS;
+					  blinkStatus = TRUE;
+					  break;
+
+				  case 0x20:
+					  blinkDelay = DELAY_250_MILISECONDS;
+					  blinkStatus = TRUE;
+					  break;
+
+				  case 0x30:
+					  blinkDelay = DELAY_500_MILISECONDS;
+					  blinkStatus = TRUE;
+					  break;
+
+				  default:
+					  blinkDelay = 0;
+					  blinkStatus = FALSE;
+					  break;
+			  }
+			  receivedCmd = 0x00;
 		  }
-		  flag_counter_2 = INACTIVE;
+
+		  dataPacketRxClear(&dataPacketRx);
+		  counterTimer2 = 0;
 	  }
 
-	  if (flag_counter_3 == ACTIVE)
+	  if (counterTimer3 >= DELAY_100_MILISECONDS)
 	  {
 		  dataPacketRxDecode(&dataPacketRx);
-		  flag_counter_3 = INACTIVE;
+		  counterTimer3 = 0;
 	  }
+
+	  if (counterTimer4 >= blinkDelay)
+	  {
+		  if (blinkStatus == TRUE)
+		  {
+			  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		  }
+		  else
+		  {
+			  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		  }
+		  counterTimer4 = 0;
+	  }
+
+	  /*
+	  if (counterTimerUartRxInterrupt >= DELAY_250_MILISECONDS)
+	  {
+		  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == INVALID_RX_DATA_PACKET)
+		  {
+			  dataPacketRxClear(&dataPacketRx);
+		  }
+		  counterTimerUartRxInterrupt = 0;
+	  }
+	  */
 
     /* USER CODE END WHILE */
 

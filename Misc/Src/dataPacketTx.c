@@ -44,12 +44,18 @@ void dataPacketTxUartSend(DataPacketTx *dataPacketTx, UART_HandleTypeDef huart)
 void dataPacketTxClear(DataPacketTx *dataPacketTx)
 {
 	dataPacketTx->dataPacketTxStatus = INVALID_TX_DATA_PACKET;
+	dataPacketTx->dataPacketLength = 0;
+	dataPacketTx->crc8 = 0x00;
+	dataPacketTx->command = 0x00;
 	memset(dataPacketTx->dataPacket, 0x00, QTY_PACKET_TX_BYTES);
 }
 
 void dataPacketTxPayloadDataClear(DataPacketTx *dataPacketTx)
 {
 	dataPacketTx->dataPacketTxStatus = INVALID_TX_DATA_PACKET;
+	dataPacketTx->dataPacketLength = 0;
+	dataPacketTx->crc8 = 0x00;
+	dataPacketTx->command = 0x00;
 	memset(dataPacketTx->payloadData, 0x00, QTY_PAYLOAD_TX_DATA_BYTES);
 }
 

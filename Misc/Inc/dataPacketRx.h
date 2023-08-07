@@ -38,6 +38,7 @@ typedef struct
 	uint16_t currentRxByteIndex;
 	uint8_t containsStarterBytes;
 	uint16_t starterByteIndex;
+	uint8_t decodeTries;
 	DataPacketRxStatus dataPacketRxStatus;
 } DataPacketRx;
 

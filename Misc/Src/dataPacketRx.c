@@ -21,6 +21,7 @@ void dataPacketRxInit(DataPacketRx *dataPacketRx, uint8_t start_1, uint8_t start
 	dataPacketRx->dataPacketRxStatus = INVALID_RX_DATA_PACKET;
 	dataPacketRx->containsStarterBytes = FALSE;
 	dataPacketRx->starterByteIndex = 0;
+	dataPacketRx->decodeTries = 0;
 }
 
 void dataPacketRxAppend(DataPacketRx *dataPacketRx, uint8_t newByte)
@@ -39,19 +40,31 @@ void dataPacketRxAppend(DataPacketRx *dataPacketRx, uint8_t newByte)
 
 void dataPacketRxDecode(DataPacketRx *dataPacketRx)
 {
-
 	if (dataPacketRx->containsStarterBytes == TRUE)
 	{
-		dataPacketRxSetCommand(dataPacketRx, dataPacketRx->dataPacket[dataPacketRx->starterByteIndex+2]);
-		dataPacketRx->payloadDataLength = dataPacketRx->dataPacket[dataPacketRx->starterByteIndex+3];
+		dataPacketRxSetCommand(dataPacketRx, dataPacketRx->dataPacket[dataPacketRx->starterByteIndex + 2]);
+		dataPacketRx->payloadDataLength = dataPacketRx->dataPacket[dataPacketRx->starterByteIndex + 3];
 
 		if (dataPacketRx->payloadDataLength == 0)
 		{
-			uint8_t receivedCrc8 = dataPacketRx->dataPacket[dataPacketRx->starterByteIndex+4];
+			uint8_t receivedCrc8 = dataPacketRx->dataPacket[dataPacketRx->starterByteIndex + 4];
 			dataPacketRx->crc8 = genCrc(dataPacketRx->dataPacket + dataPacketRx->starterByteIndex, 4);
 
 			if (dataPacketRx->crc8 == receivedCrc8)
 			{
+				dataPacketRx->currentRxByteIndex = 0;
+				dataPacketRx->dataPacketRxStatus = VALID_RX_DATA_PACKET;
+			}
+		}
+		else
+		{
+			uint8_t receivedCrc8 = dataPacketRx->dataPacket[dataPacketRx->starterByteIndex + dataPacketRx->payloadDataLength + 4];
+			dataPacketRx->crc8 = genCrc(dataPacketRx->dataPacket + dataPacketRx->starterByteIndex, dataPacketRx->payloadDataLength + 4);
+
+			if (dataPacketRx->crc8 == receivedCrc8)
+			{
+				dataPacketRxSetPayloadData(dataPacketRx, dataPacketRx->dataPacket + dataPacketRx->starterByteIndex + 4, dataPacketRx->payloadDataLength);
+				dataPacketRx->currentRxByteIndex = 0;
 				dataPacketRx->dataPacketRxStatus = VALID_RX_DATA_PACKET;
 			}
 		}
@@ -77,6 +90,16 @@ void dataPacketRxDecode(DataPacketRx *dataPacketRx)
 			}
 		}
 	}
+
+	if (dataPacketRx->dataPacketRxStatus == INVALID_RX_DATA_PACKET)
+	{
+		dataPacketRx->decodeTries++;
+		if (dataPacketRx->decodeTries >= 30)
+		{
+			dataPacketRxClear(dataPacketRx);
+			dataPacketRx->decodeTries = 0;
+		}
+	}
 }
 
 void dataPacketRxClear(DataPacketRx *dataPacketRx)
@@ -85,12 +108,24 @@ void dataPacketRxClear(DataPacketRx *dataPacketRx)
 	dataPacketRx->containsStarterBytes = FALSE;
 	dataPacketRx->currentRxByteIndex = 0;
 	dataPacketRx->dataPacketLength = 0;
+	dataPacketRx->payloadDataLength = 0;
+	dataPacketRx->command = 0x00;
+	dataPacketRx->crc8 = 0x00;
+	dataPacketRx->starterByteIndex = 0;
+	dataPacketRx->decodeTries = 0;
+	memset(dataPacketRx->payloadData, 0x00, QTY_PAYLOAD_RX_DATA_BYTES);
 	memset(dataPacketRx->dataPacket, 0x00, QTY_PACKET_RX_BYTES);
 }
 
 void dataPacketRxPayloadDataClear(DataPacketRx *dataPacketRx)
 {
 	dataPacketRx->dataPacketRxStatus = INVALID_RX_DATA_PACKET;
+	dataPacketRx->containsStarterBytes = FALSE;
+	dataPacketRx->currentRxByteIndex = 0;
+	dataPacketRx->dataPacketLength = 0;
+	dataPacketRx->payloadDataLength = 0;
+	dataPacketRx->command = 0x00;
+	dataPacketRx->crc8 = 0x00;
 	memset(dataPacketRx->payloadData, 0x00, QTY_PAYLOAD_RX_DATA_BYTES);
 }
 
