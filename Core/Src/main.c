@@ -39,7 +39,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim9;
-
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
@@ -49,19 +48,18 @@ DataPacketRx dataPacketRx;
 uint8_t receivedByte = 0x00;
 
 uint8_t bytes[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-				 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
-				};
-
-// uint32_t counterTimerUartRxInterrupt = 0;
+				 	 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+					};
 
 uint32_t counterTimer1 = 0;
 uint32_t counterTimer2 = 0;
 uint32_t counterTimer3 = 0;
-uint32_t counterTimer4 = 0;
 
 uint8_t cmdTemporization_1 = 0x10;
 uint8_t cmdTemporization_2 = 0x20;
 uint8_t cmdTemporization_3 = 0x30;
+
+uint8_t stateMachine = 0x00;
 
 Bool blinkStatus = FALSE;
 uint32_t blinkDelay = 0;
@@ -88,11 +86,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim9)
 	{
-		// counterTimerUartRxInterrupt++;
 		counterTimer1++;
 		counterTimer2++;
 		counterTimer3++;
-		counterTimer4++;
 	}
 }
 
@@ -105,12 +101,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		HAL_UART_Receive_IT(&huart2, &receivedByte, 1);
 		dataPacketRxAppend(&dataPacketRx, receivedByte);
-		// counterTimerUartRxInterrupt = 0;
 		receivedByte = 0x00;
 	}
 }
-
-
 
 /* USER CODE END 0 */
 
@@ -158,85 +151,112 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (counterTimer1 >= DELAY_1000_MILISECONDS)
-	  {
-		  dataPacketTxSetCommand(&dataPacketTx, 0x01);
-		  dataPacketTxSetPayloadData(&dataPacketTx, bytes, 16);
-		  dataPacketTxMount(&dataPacketTx);
-		  dataPacketTxUartSend(&dataPacketTx, huart2);
-		  dataPacketTxPayloadDataClear(&dataPacketTx);
-		  dataPacketTxClear(&dataPacketTx);
-		  counterTimer1 = 0;
-	  }
-
-	  if (counterTimer2 >= DELAY_1000_MILISECONDS)
-	  {
-		  //HAL_UART_Transmit(&huart3, dataPacketRx.dataPacket, 15, HAL_MAX_DELAY);
-		  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == VALID_RX_DATA_PACKET)
-		  {
-			  uint8_t receivedCmd = dataPacketRxGetCommand(&dataPacketRx);
-			  switch (receivedCmd)
-			  {
-				  case 0x10:
-					  blinkDelay = DELAY_100_MILISECONDS;
-					  blinkStatus = TRUE;
-					  break;
-
-				  case 0x20:
-					  blinkDelay = DELAY_250_MILISECONDS;
-					  blinkStatus = TRUE;
-					  break;
-
-				  case 0x30:
-					  blinkDelay = DELAY_500_MILISECONDS;
-					  blinkStatus = TRUE;
-					  break;
-
-				  default:
-					  blinkDelay = 0;
-					  blinkStatus = FALSE;
-					  break;
-			  }
-			  receivedCmd = 0x00;
-			  //HAL_UART_Transmit(&huart3, dataPacketRx.dataPacket, 15, HAL_MAX_DELAY);
-			  dataPacketRxClear(&dataPacketRx);
-		  }
-		  counterTimer2 = 0;
-	  }
-
-	  if (counterTimer3 >= DELAY_100_MILISECONDS)
-	  {
-		  dataPacketRxDecode(&dataPacketRx);
-		  counterTimer3 = 0;
-	  }
-
-	  if (counterTimer4 >= blinkDelay)
-	  {
-		  if (blinkStatus == TRUE)
-		  {
-			  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-		  }
-		  else
-		  {
-			  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-		  }
-		  counterTimer4 = 0;
-	  }
-
-	  /*
-	  if (counterTimerUartRxInterrupt >= DELAY_250_MILISECONDS)
-	  {
-		  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == INVALID_RX_DATA_PACKET)
-		  {
-			  dataPacketRxClear(&dataPacketRx);
-		  }
-		  counterTimerUartRxInterrupt = 0;
-	  }
-	  */
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  /* ============================================================================= */
+
+	  /********************************* TOP SLOT START ********************************/
+
+	  /* Put here the code to be executed in all cycles before the state machine */
+
+	  /********************************** TOP SLOT END *********************************/
+
+	  /* ============================================================================= */
+
+	  /****************************** STATE MACHINE START ******************************/
+
+	  switch (stateMachine)
+	  {
+	  	  case 0:
+	  		  if (counterTimer1 >= DELAY_10_MILISECONDS)
+	  		  {
+	  			dataPacketRxDecode(&dataPacketRx);
+	  			counterTimer1 = 0;
+	  		  }
+	  		  stateMachine = 1;
+	  		  break;
+
+		  case 1:
+			  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == VALID_RX_DATA_PACKET)
+			  {
+				  uint8_t receivedCmd = dataPacketRxGetCommand(&dataPacketRx);
+				  switch (receivedCmd)
+				  {
+					  case 0x10:
+						  blinkDelay = DELAY_100_MILISECONDS;
+						  blinkStatus = TRUE;
+						  break;
+
+					  case 0x20:
+						  blinkDelay = DELAY_250_MILISECONDS;
+						  blinkStatus = TRUE;
+						  break;
+
+					  case 0x30:
+						  blinkDelay = DELAY_500_MILISECONDS;
+						  blinkStatus = TRUE;
+						  break;
+
+					  default:
+						  blinkDelay = 0;
+						  blinkStatus = FALSE;
+						  break;
+				  }
+				  receivedCmd = 0x00;
+				  dataPacketRxClear(&dataPacketRx);
+			  }
+			  stateMachine = 2;
+			  break;
+
+		  case 2:
+			  if (counterTimer2 >= blinkDelay)
+			  {
+				  if (blinkStatus == TRUE)
+				  {
+					  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+				  }
+				  else
+				  {
+					  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+				  }
+				  counterTimer2 = 0;
+			  }
+			  stateMachine = 3;
+			  break;
+
+		  case 3:
+			  if (counterTimer3 >= DELAY_1000_MILISECONDS)
+			  {
+				  dataPacketTxSetCommand(&dataPacketTx, 0x01);
+				  dataPacketTxSetPayloadData(&dataPacketTx, bytes, 16);
+				  dataPacketTxMount(&dataPacketTx);
+				  dataPacketTxUartSend(&dataPacketTx, huart2);
+				  dataPacketTxPayloadDataClear(&dataPacketTx);
+				  dataPacketTxClear(&dataPacketTx);
+				  counterTimer3 = 0;
+			  }
+			  stateMachine = 0;
+			  break;
+
+		  default:
+			  stateMachine = 0;
+			  break;
+	  }
+
+	  /******************************* STATE MACHINE END *******************************/
+
+	  /* ============================================================================= */
+
+	  /******************************* BOTTOM SLOT START *******************************/
+
+	  /* Put here the code to be executed in all cycles after the state machine */
+
+	  /******************************** BOTTOM SLOT END ********************************/
+
+	  /* ============================================================================= */
   }
   /* USER CODE END 3 */
 }

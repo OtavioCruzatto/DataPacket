@@ -101,7 +101,6 @@ void dataPacketRxClear(DataPacketRx *dataPacketRx)
 	dataPacketRx->command = 0x00;
 	dataPacketRx->crc8 = 0x00;
 	dataPacketRx->starterByteIndex = 0;
-	dataPacketRx->decodeTries = 0;
 	memset(dataPacketRx->payloadData, 0x00, QTY_PAYLOAD_RX_DATA_BYTES);
 	memset(dataPacketRx->dataPacket, 0x00, QTY_PACKET_RX_BYTES);
 }
