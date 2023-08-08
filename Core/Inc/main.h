@@ -32,25 +32,16 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "enums.h"
+#include "defs.h"
 #include "dataPacketTx.h"
 #include "dataPacketRx.h"
+#include "application.h"
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
-typedef enum FLAG
-{
-	INACTIVE = 0x00,
-	ACTIVE
-} Flag;
-
-typedef enum BOOL
-{
-	FALSE = 0x00,
-	TRUE
-} Bool;
 
 /* USER CODE END ET */
 
@@ -77,16 +68,6 @@ void Error_Handler(void);
 #define LED_Pin GPIO_PIN_5
 #define LED_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
-
-#define DELAY_1_MILISECONDS		10
-#define DELAY_5_MILISECONDS		50
-#define DELAY_10_MILISECONDS	100
-#define DELAY_50_MILISECONDS	500
-#define DELAY_100_MILISECONDS	1000
-#define DELAY_250_MILISECONDS	2500
-#define DELAY_500_MILISECONDS	5000
-#define DELAY_1000_MILISECONDS	10000
-#define DELAY_2000_MILISECONDS	20000
 
 /* USER CODE END Private defines */
 

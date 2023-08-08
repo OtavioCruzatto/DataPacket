@@ -5,7 +5,7 @@
  *      Author: Otavio
  */
 
-#include <dataPacketRx.h>
+#include "dataPacketRx.h"
 
 void dataPacketRxInit(DataPacketRx *dataPacketRx, uint8_t start_1, uint8_t start_2)
 {

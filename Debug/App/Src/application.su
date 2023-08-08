@@ -1,0 +1,7 @@
+../App/Src/application.c:10:6:applicationInit	24	static
+../App/Src/application.c:20:6:applicationDecodeCommand	16	static
+../App/Src/application.c:46:6:applicationExecuteCommand	16	static
+../App/Src/application.c:58:10:applicationGetBlinkDelay	16	static
+../App/Src/application.c:63:6:applicationSetCommand	16	static
+../App/Src/application.c:68:6:applicationSetDecodeStatus	16	static
+../App/Src/application.c:73:6:applicationGetDecodeStatus	16	static

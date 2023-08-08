@@ -55,14 +55,8 @@ uint32_t counterTimer1 = 0;
 uint32_t counterTimer2 = 0;
 uint32_t counterTimer3 = 0;
 
-uint8_t cmdTemporization_1 = 0x10;
-uint8_t cmdTemporization_2 = 0x20;
-uint8_t cmdTemporization_3 = 0x30;
-
+Application appBlinkLed;
 uint8_t stateMachine = 0x00;
-
-Bool blinkStatus = FALSE;
-uint32_t blinkDelay = 0;
 
 /* USER CODE END PV */
 
@@ -143,6 +137,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim9);
   dataPacketTxInit(&dataPacketTx, 0xAA, 0x55);
   dataPacketRxInit(&dataPacketRx, 0xAA, 0x55);
+  applicationInit(&appBlinkLed, LED_GPIO_Port, LED_Pin);
   HAL_UART_Receive_IT(&huart2, &receivedByte, 1);
 
   /* USER CODE END 2 */
@@ -183,51 +178,32 @@ int main(void)
 			  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == VALID_RX_DATA_PACKET)
 			  {
 				  uint8_t receivedCmd = dataPacketRxGetCommand(&dataPacketRx);
-				  switch (receivedCmd)
-				  {
-					  case 0x10:
-						  blinkDelay = DELAY_100_MILISECONDS;
-						  blinkStatus = TRUE;
-						  break;
-
-					  case 0x20:
-						  blinkDelay = DELAY_250_MILISECONDS;
-						  blinkStatus = TRUE;
-						  break;
-
-					  case 0x30:
-						  blinkDelay = DELAY_500_MILISECONDS;
-						  blinkStatus = TRUE;
-						  break;
-
-					  default:
-						  blinkDelay = 0;
-						  blinkStatus = FALSE;
-						  break;
-				  }
-				  receivedCmd = 0x00;
+				  applicationSetCommand(&appBlinkLed, receivedCmd);
+				  applicationSetDecodeStatus(&appBlinkLed, TRUE);
 				  dataPacketRxClear(&dataPacketRx);
 			  }
 			  stateMachine = 2;
 			  break;
 
 		  case 2:
-			  if (counterTimer2 >= blinkDelay)
+			  if (applicationGetDecodeStatus(&appBlinkLed) == TRUE)
 			  {
-				  if (blinkStatus == TRUE)
-				  {
-					  HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-				  }
-				  else
-				  {
-					  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-				  }
-				  counterTimer2 = 0;
+				  applicationDecodeCommand(&appBlinkLed);
+				  applicationSetDecodeStatus(&appBlinkLed, FALSE);
 			  }
 			  stateMachine = 3;
 			  break;
 
 		  case 3:
+			  if (counterTimer2 >= applicationGetBlinkDelay(&appBlinkLed))
+			  {
+				  applicationExecuteCommand(&appBlinkLed);
+				  counterTimer2 = 0;
+			  }
+			  stateMachine = 4;
+			  break;
+
+		  case 4:
 			  if (counterTimer3 >= DELAY_1000_MILISECONDS)
 			  {
 				  dataPacketTxSetCommand(&dataPacketTx, 0x01);

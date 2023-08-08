@@ -1,5 +1,5 @@
-Misc/Src/crc8.o: ../Misc/Src/crc8.c \
- C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h \
+App/Src/application.o: ../App/Src/application.c \
+ C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/App/Inc/application.h \
  ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -32,9 +32,8 @@ Misc/Src/crc8.o: ../Misc/Src/crc8.c \
  C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/App/Inc/defs.h \
  C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketTx.h \
  C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h \
- C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketRx.h \
- C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/App/Inc/application.h
-C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h:
+ C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketRx.h
+C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/App/Inc/application.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -69,4 +68,3 @@ C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/App/Inc/defs.h:
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketTx.h:
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/crc8.h:
 C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/Misc/Inc/dataPacketRx.h:
-C:/Users/Otavi/Documents/Embed/STM32/Projects/DataPacket/App/Inc/application.h:
