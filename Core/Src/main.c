@@ -38,15 +38,17 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim9;
+
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 DataPacketTx dataPacketTx;
 DataPacketRx dataPacketRx;
-uint8_t receivedByte = 0x00;
 
+uint8_t receivedByte = 0x00;
 uint8_t bytes[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 				 	 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
 					};
@@ -55,7 +57,7 @@ uint32_t counterTimer1 = 0;
 uint32_t counterTimer2 = 0;
 uint32_t counterTimer3 = 0;
 
-Application appBlinkLed;
+Application app;
 uint8_t stateMachine = 0x00;
 
 /* USER CODE END PV */
@@ -66,6 +68,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM9_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -132,12 +135,14 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM9_Init();
   MX_USART3_UART_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_TIM_Base_Start_IT(&htim9);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   dataPacketTxInit(&dataPacketTx, 0xAA, 0x55);
   dataPacketRxInit(&dataPacketRx, 0xAA, 0x55);
-  applicationInit(&appBlinkLed, LED_GPIO_Port, LED_Pin);
+  applicationInit(&app, LED_GPIO_Port, LED_Pin, &htim2, TIM_CHANNEL_1);
   HAL_UART_Receive_IT(&huart2, &receivedByte, 1);
 
   /* USER CODE END 2 */
@@ -178,26 +183,34 @@ int main(void)
 			  if (dataPacketRxGetDataPacketStatus(&dataPacketRx) == VALID_RX_DATA_PACKET)
 			  {
 				  uint8_t receivedCmd = dataPacketRxGetCommand(&dataPacketRx);
-				  applicationSetCommand(&appBlinkLed, receivedCmd);
-				  applicationSetDecodeStatus(&appBlinkLed, TRUE);
+				  uint8_t receivedPayloadDataLength = dataPacketRxGetPayloadDataLength(&dataPacketRx);
+
+				  if (receivedPayloadDataLength > 0)
+				  {
+					  uint8_t *receivedPayloadData = dataPacketRxGetPayloadData(&dataPacketRx);
+					  applicationSetData(&app, receivedPayloadData, receivedPayloadDataLength);
+				  }
+
+				  applicationSetCommand(&app, receivedCmd);
+				  applicationSetDecodeStatus(&app, TRUE);
 				  dataPacketRxClear(&dataPacketRx);
 			  }
 			  stateMachine = 2;
 			  break;
 
 		  case 2:
-			  if (applicationGetDecodeStatus(&appBlinkLed) == TRUE)
+			  if (applicationGetDecodeStatus(&app) == TRUE)
 			  {
-				  applicationDecodeCommand(&appBlinkLed);
-				  applicationSetDecodeStatus(&appBlinkLed, FALSE);
+				  applicationDecodeCommand(&app);
+				  applicationSetDecodeStatus(&app, FALSE);
 			  }
 			  stateMachine = 3;
 			  break;
 
 		  case 3:
-			  if (counterTimer2 >= applicationGetBlinkDelay(&appBlinkLed))
+			  if (counterTimer2 >= applicationGetBlinkDelay(&app))
 			  {
-				  applicationExecuteCommand(&appBlinkLed);
+				  applicationExecuteBlinkLed(&app);
 				  counterTimer2 = 0;
 			  }
 			  stateMachine = 4;
@@ -213,6 +226,15 @@ int main(void)
 				  dataPacketTxPayloadDataClear(&dataPacketTx);
 				  dataPacketTxClear(&dataPacketTx);
 				  counterTimer3 = 0;
+			  }
+			  stateMachine = 5;
+			  break;
+
+		  case 5:
+			  if (applicationGetUpdateDutyCycle(&app) == TRUE)
+			  {
+				  applicationUpdateDutyCycle(&app);
+				  applicationSetUpdateDutyCycle(&app, FALSE);
 			  }
 			  stateMachine = 0;
 			  break;
@@ -282,6 +304,55 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4500;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 2250;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
+
 }
 
 /**
@@ -400,6 +471,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);

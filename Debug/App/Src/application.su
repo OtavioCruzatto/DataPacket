@@ -1,7 +1,11 @@
 ../App/Src/application.c:10:6:applicationInit	24	static
-../App/Src/application.c:20:6:applicationDecodeCommand	16	static
-../App/Src/application.c:46:6:applicationExecuteCommand	16	static
-../App/Src/application.c:58:10:applicationGetBlinkDelay	16	static
-../App/Src/application.c:63:6:applicationSetCommand	16	static
-../App/Src/application.c:68:6:applicationSetDecodeStatus	16	static
-../App/Src/application.c:73:6:applicationGetDecodeStatus	16	static
+../App/Src/application.c:26:6:applicationDecodeCommand	24	static
+../App/Src/application.c:67:6:applicationExecuteBlinkLed	16	static
+../App/Src/application.c:79:6:applicationUpdateDutyCycle	16	static
+../App/Src/application.c:84:10:applicationGetBlinkDelay	16	static
+../App/Src/application.c:89:6:applicationSetCommand	16	static
+../App/Src/application.c:94:6:applicationSetDecodeStatus	16	static
+../App/Src/application.c:99:6:applicationGetDecodeStatus	16	static
+../App/Src/application.c:104:6:applicationSetData	24	static
+../App/Src/application.c:113:6:applicationSetUpdateDutyCycle	16	static
+../App/Src/application.c:118:6:applicationGetUpdateDutyCycle	16	static
